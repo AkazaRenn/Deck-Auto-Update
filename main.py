@@ -4,21 +4,21 @@ from pathlib import Path as path
 # The decky plugin module is located at decky-loader/plugin
 # For easy intellisense checkout the decky-loader code one directory up
 # or add the `decky-loader/plugin` path to `python.analysis.extraPaths` in `.vscode/settings.json`
-import decky_plugin
+import decky
 from settings import SettingsManager as settings_manager
 
-settings = settings_manager(name="config", settings_directory=decky_plugin.DECKY_PLUGIN_SETTINGS_DIR)
+settings = settings_manager(name="config", settings_directory=decky.DECKY_PLUGIN_SETTINGS_DIR)
 settings.read()
 
 class Plugin:
     async def log_info(self, msg: str):
-        decky_plugin.logger.info(msg)
+        decky.logger.info(msg)
 
     async def log_error(self, msg: str):
-        decky_plugin.logger.error(msg)
+        decky.logger.error(msg)
 
-    async def log_warn(self, msg: str):
-        decky_plugin.logger.warning(msg)
+    async def log_warning(self, msg: str):
+        decky.logger.warning(msg)
 
     async def set_cron(self, cron: str):
         settings.setSetting("cron", cron)

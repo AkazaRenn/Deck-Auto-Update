@@ -2,6 +2,7 @@
   "name": "Deck Auto Update",
   "author": "Akaza Renn",
   "flags": ["root"],
+  "api_version": 1,
   "publish": {
     "tags": ["root", "update", "updater"],
     "description": "Update the steam client on a scheduled basis.",

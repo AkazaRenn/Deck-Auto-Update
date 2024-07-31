@@ -2,8 +2,9 @@
   "name": "deck-auto-update",
   "version": "0.2.1",
   "description": "A Decky plugin to update the steam client on a scheduled basis",
+  "type": "module",
   "scripts": {
-    "build": "shx rm -rf dist && rollup -c",
+    "build": "rollup -c",
     "watch": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,24 +27,20 @@
   },
   "homepage": "hhttps://github.com/AkazaRenn/Deck-Auto-Update#readme",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^21.1.0",
-    "@rollup/plugin-json": "^4.1.0",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-replace": "^4.0.0",
-    "@rollup/plugin-typescript": "^8.3.3",
-    "@types/react": "16.14.0",
-    "@types/webpack": "^5.28.0",
-    "rollup": "^2.77.1",
-    "rollup-plugin-import-assets": "^1.1.1",
-    "shx": "^0.3.4",
-    "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "@decky/rollup": "^1.0.0",
+    "@types/react": "18.3.3",
+    "@types/react-dom": "18.3.0",
+    "@types/webpack": "^5.28.5",
+    "rollup": "^4.18.0",
+    "typescript": "^5.5.3"
   },
   "dependencies": {
-    "croner": "^8.0.2",
-    "decky-frontend-lib": "^3.25.0",
-    "google-protobuf": "^3.21.2",
-    "react-icons": "^4.4.0"
+    "@decky/api": "^1.0.5",
+    "@decky/ui": "^4.7.0",
+    "croner": "^8.1.0",
+    "google-protobuf": "^3.21.4",
+    "react-icons": "^5.2.1",
+    "tslib": "^2.6.3"
   },
   "pnpm": {
     "peerDependencyRules": {
