@@ -1,20 +1,19 @@
 import {
   definePlugin,
   showModal,
-  staticClasses,
   ButtonItem,
   ConfirmModal,
   PanelSection,
   PanelSectionRow,
-  ServerAPI,
   SliderField,
   TextField,
-} from "decky-frontend-lib";
+} from "@decky/ui";
 import * as interop from "./interop";
-import { useEffect, useRef, useState, VFC } from "react";
+import log from "./logger";
+import { useEffect, useRef, useState } from "react";
 import { FaRegArrowAltCircleUp } from "react-icons/fa";
-import { CMsgSystemUpdateState } from "../backend/protobuf/out/steammessages_client_objects_pb";
-import { EUpdaterState } from "../backend/protobuf/out/enums_pb";
+import { CMsgSystemUpdateState } from "../deps/protobuf/out/steammessages_client_objects_pb";
+import { EUpdaterState } from "../deps/protobuf/out/enums_pb";
 import { Cron } from "croner";
 
 // Global variables
@@ -22,7 +21,7 @@ var schedule: any = null;
 var updateTimeout: any = null;
 var updateStateChangeRegistration: any = null;
 
-const Content: VFC<{ serverAPI: ServerAPI }> = ({ }) => {
+function Content() {
   const initializaing = useRef(true);
 
   var cronText = "";
@@ -102,10 +101,10 @@ function updateSchedule(cronExpression: string,
   schedule = null;
   try {
     schedule = Cron(cronExpression, checkForUpdates);
-    interop.logInfo("Cron schedule set to: " + cronExpression);
+    log.info("Cron schedule set to: " + cronExpression);
   } catch (e) {
     if (logError) {
-      interop.logError("Failed to parse cron expression: " + e);
+      log.error("Failed to parse cron expression: " + e);
     }
   }
 }
@@ -119,22 +118,22 @@ function unregisterUpdateStateChangeRegistration(): void {
 
 async function checkForUpdates(): Promise<void> {
   if (updateStateChangeRegistration) {
-    interop.logInfo("An update is in progress, skipping...");
+    log.info("An update is in progress, skipping...");
     return;
   } else if ((interop.getBatteryLevel() < interop.getMinBattery()) && (!interop.getIsCharging())) {
-    interop.logInfo("Battery low, skipping...");
+    log.info("Battery low, skipping...");
     return;
   } else if (window.NotificationStore.BIsUserInGame()) {
-    interop.logInfo("In game, skipping...");
+    log.info("In game, skipping...");
     return;
   }
 
-  interop.logInfo("Checking for updates...");
+  log.info("Checking for updates...");
   updateStateChangeRegistration = SteamClient.Updates.RegisterForUpdateStateChanges(updateStateChangeHandler);
   // 1 hour timeout for updating, terminate gracefully if it exceeds that time
   updateTimeout = setTimeout(unregisterUpdateStateChangeRegistration, 60 * 60 * 1000);
   SteamClient.Updates.CheckForUpdates().catch((e: any) => {
-    interop.logError("Failed to check for updates: " + e);
+    log.error("Failed to check for updates: " + e);
     unregisterUpdateStateChangeRegistration();
   })
 };
@@ -143,36 +142,36 @@ function updateStateChangeHandler(protoMsg: Uint8Array): void {
   try {
     var updateState = CMsgSystemUpdateState.deserializeBinary(protoMsg).toObject();
   } catch (e) {
-    interop.logError("Failed to parse update state: " + e);
+    log.error("Failed to parse update state: " + e);
     unregisterUpdateStateChangeRegistration();
     return;
   }
 
   switch (updateState.state) {
     case EUpdaterState.K_EUPDATERSTATE_AVAILABLE:
-      interop.logInfo("Updates available, applying...");
+      log.info("Updates available, applying...");
       // "CAI=" comes from the debugger, not sure what it means but works...
       SteamClient.Updates.ApplyUpdates("CAI=");
       break;
     case EUpdaterState.K_EUPDATERSTATE_SYSTEMRESTARTPENDING:
       if (updateState.supportsOsUpdates) {
         if (window.NotificationStore.BIsUserInGame()) {
-          interop.logWarning("In game, skip restarting...");
+          log.warning("In game, skip restarting...");
         } else {
-          interop.logInfo("Pending system restart, restarting...");
+          log.info("Pending system restart, restarting...");
           SteamClient.System.RestartPC();
         }
       } else {
-        interop.logWarning("Invalid state, system restart available but OS updates are unsupported...");
+        log.warning("Invalid state, system restart available but OS updates are unsupported...");
       }
       // If we didn't restart, unregister the handler
       unregisterUpdateStateChangeRegistration();
       break;
     case EUpdaterState.K_EUPDATERSTATE_CLIENTRESTARTPENDING:
       if (window.NotificationStore.BIsUserInGame()) {
-        interop.logWarning("In game, skip restarting...");
+        log.warning("In game, skip restarting...");
       } else {
-        interop.logInfo("Pending client restart, restarting...");
+        log.info("Pending client restart, restarting...");
         SteamClient.User.StartRestart();
       }
       // If we didn't restart, unregister the handler
@@ -182,21 +181,20 @@ function updateStateChangeHandler(protoMsg: Uint8Array): void {
     case EUpdaterState.K_EUPDATERSTATE_APPLYING:
       break;
     default:
-      interop.logInfo("No updates available");
+      log.info("No updates available");
       unregisterUpdateStateChangeRegistration();
       break;
   }
 }
 
-export default definePlugin((serverApi: ServerAPI) => {
-  interop.setServer(serverApi);
+export default definePlugin(() => {
   interop.getCron().then(response => {
     updateSchedule(response, false);
   })
 
   return {
-    title: <div className={staticClasses.Title}>Deck Auto Update</div>,
-    content: <Content serverAPI={serverApi} />,
+    name: "Deck Auto Update",
+    content: <Content />,
     icon: <FaRegArrowAltCircleUp />,
     onDismount() {
       unregisterUpdateStateChangeRegistration();

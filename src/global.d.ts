@@ -14,6 +14,6 @@ export declare global {
     };
 
     interface Window {
-      NotificationStore: any;
+        NotificationStore: any;
     }
 }

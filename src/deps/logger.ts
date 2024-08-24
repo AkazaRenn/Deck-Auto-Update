@@ -1,0 +1,1 @@
+../../deps/decky-loader/frontend/src/logger.ts

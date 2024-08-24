@@ -1,3 +1,6 @@
-[submodule "backend/protobuf/source"]
-	path = backend/protobuf/source
+[submodule "deps/protobuf/source"]
+	path = deps/protobuf/source
 	url = https://github.com/SteamDatabase/Protobufs.git
+[submodule "deps/decky-loader"]
+	path = deps/decky-loader
+	url = https://github.com/SteamDeckHomebrew/decky-loader.git
